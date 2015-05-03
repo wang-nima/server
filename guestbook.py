@@ -25,11 +25,20 @@ class MainPage(webapp2.RequestHandler):
     ancestor_key = ndb.Key("Book", guestbook_name or "*notitle*")
     greetings = Greeting.query_book(ancestor_key).fetch(20)
 
+    self.response.out.write("""\
+    <table>
+    <tr>
+    <td><b>spend</b></td>
+    <td><b>satisfaction</b></td>		
+  </tr>""")
     for greeting in greetings:
-      self.response.out.write("<blockquote>%s " %
-                              cgi.escape(greeting.content))
-      self.response.out.write("</blockquote>")
+      self.response.out.write("<tr><td>")
+      self.response.out.write(greeting.content)
+      self.response.out.write("</td><td>")
+      self.response.out.write(greeting.pref)
+      self.response.out.write("</td></tr>")
 
+    self.response.out.write("</table>")
     self.response.out.write("""
         </body>
       </html>""")
@@ -40,8 +49,8 @@ class SubmitForm(webapp2.RequestHandler):
     # greetings are in the same entity group.
     guestbook_name = self.request.get('guestbook_name')
     greeting = Greeting(parent=ndb.Key("Book", guestbook_name or "*notitle*"),
-                        pref = self.request.get('pref'), 
-                        content = self.request.get('content'))
+                        content = self.request.get('content'),
+                        pref = self.request.get('pref'))
     greeting.put()
     self.redirect('/?' + urllib.urlencode({'guestbook_name': guestbook_name}))
 
